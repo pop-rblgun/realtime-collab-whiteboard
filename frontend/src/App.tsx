@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from './store/store';
-import { updateElement, undo, Element } from './store/whiteboardSlice';
+import type { RootState } from './store/store';
+import { updateElement, undo, type Element } from './store/whiteboardSlice';
 import { emitElementUpdate } from './socket';
 
 const App: React.FC = () => {
   const elements = useSelector((state: RootState) => state.whiteboard.elements);
   const dispatch = useDispatch();
   const [selectedColor, setSelectedColor] = useState('#0071e3');
+  const [selectedTool, setSelectedTool] = useState<'rect' | 'circle'>('rect');
 
   const addElement = (type: 'rect' | 'circle', x: number, y: number) => {
     const newElement: Element = {
@@ -25,7 +26,7 @@ const App: React.FC = () => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left - 25;
     const y = e.clientY - rect.top - 25;
-    addElement('rect', x, y);
+    addElement(selectedTool, x, y);
   };
 
   return (
@@ -36,6 +37,20 @@ const App: React.FC = () => {
           <p>Real-time updates via WebSockets & Redux</p>
         </div>
         <div className="toolbar">
+          <div className="tool-selector">
+            <button 
+              className={`tool-btn ${selectedTool === 'rect' ? 'active' : ''}`} 
+              onClick={() => setSelectedTool('rect')}
+            >
+              Square
+            </button>
+            <button 
+              className={`tool-btn ${selectedTool === 'circle' ? 'active' : ''}`} 
+              onClick={() => setSelectedTool('circle')}
+            >
+              Circle
+            </button>
+          </div>
           <button className="apple-btn undo-btn" onClick={() => dispatch(undo())}>Undo</button>
           <div className="color-picker">
             <input type="color" value={selectedColor} onChange={(e) => setSelectedColor(e.target.value)} />
@@ -44,7 +59,7 @@ const App: React.FC = () => {
       </header>
 
       <main className="canvas-container">
-        <div className="canvas" onClick={handleCanvasClick}>
+        <div className={`canvas ${selectedTool}-cursor`} onClick={handleCanvasClick}>
           {elements.map((el) => (
             <div
               key={el.id}
@@ -56,7 +71,7 @@ const App: React.FC = () => {
               }}
             />
           ))}
-          <div className="canvas-instruction">Click anywhere to add a square</div>
+          <div className="canvas-instruction">Click anywhere to add a {selectedTool === 'rect' ? 'square' : 'circle'}</div>
         </div>
       </main>
 
@@ -123,6 +138,35 @@ const App: React.FC = () => {
           background: #e8e8ed;
           color: var(--apple-dark);
         }
+        .color-picker input {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          border: 2px solid #e8e8ed;
+          cursor: pointer;
+        }
+        .tool-selector {
+          display: flex;
+          background: #e8e8ed;
+          padding: 4px;
+          border-radius: 10px;
+          gap: 2px;
+        }
+        .tool-btn {
+          padding: 6px 12px;
+          border-radius: 8px;
+          border: none;
+          background: transparent;
+          font-size: 0.85rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .tool-btn.active {
+          background: white;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          color: var(--apple-blue);
+        }
         .canvas-container {
           flex: 1;
           padding: 32px;
@@ -138,14 +182,25 @@ const App: React.FC = () => {
           border-radius: 24px;
           box-shadow: 0 10px 40px rgba(0,0,0,0.05);
           position: relative;
-          cursor: crosshair;
         }
+        .canvas.rect-cursor { cursor: crosshair; }
+        .canvas.circle-cursor { cursor: cell; }
         .element {
           position: absolute;
           width: 50px;
           height: 50px;
           border-radius: 8px;
           transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          cursor: pointer;
+        }
+        .element.circle {
+          border-radius: 50%;
+        }
+        .element:hover {
+          transform: scale(1.1);
+          filter: brightness(1.1);
+          box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+          z-index: 50;
         }
         .canvas-instruction {
           position: absolute;

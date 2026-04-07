@@ -16,7 +16,7 @@ frontend/dist/
 
 # Database files
 *.db
-*.db-journal
+*.db-*
 *.sqlite
 
 # Logs
