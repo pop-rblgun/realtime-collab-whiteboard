@@ -1,0 +1,46 @@
+# 🚀 Collaborative Whiteboard GitIgnore
+
+# Dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+jspm_packages/
+
+# Build artifacts
+dist/
+build/
+backend/dist/
+frontend/dist/
+.angular/
+.vite/
+
+# Database files
+*.db
+*.db-journal
+*.sqlite
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
